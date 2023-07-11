@@ -1,0 +1,35 @@
+# In this file, you can edit any message that is sent to the user.
+# These messages support the Minecraft color codes, which can be found here:
+# &0 = Black                 &1 = Dark Blue
+# &2 = Dark Green            &3 = Dark Aqua
+# &4 = Dark Red              &5 = Dark Purple
+# &6 = Gold                  &7 = Gray
+# &8 = Dark Gray             &9 = Blue
+# &a = Green                 &b = Aqua
+# &c = Red                   &d = Light Purple
+# &e = Yellow                &f = White
+# &l = Bold
+
+# Below each message is an "enabled" section. All are default
+# set to true. If you do not want a message to be shown, change
+# this to false.
+
+# Use %sender% to get the name of the sender.
+# Use %target% to get the name of the target.
+
+# -------------------------------------------------------- #
+# |                      General                         | #
+# -------------------------------------------------------- #
+
+no-permission: # %target% or %sender% is not applicable here
+  message: "&cYou do not have permission to perform that command."
+  enabled: true
+
+no-player:
+  message: "&cCan't find player."
+  enabled: true
+
+# -------------------------------------------------------- #
+# |                  Friend Messages                     | #
+# -------------------------------------------------------- #
+

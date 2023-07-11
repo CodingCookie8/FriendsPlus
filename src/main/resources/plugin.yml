@@ -1,0 +1,18 @@
+name: FriendsPlus
+main: me.codingcookie.friendsplus.FriendsPlus
+version: 0.0.1
+description: Add friends!
+authors: [CodingCookie]
+
+commands:
+  friends:
+    description: Check, add, or remove friends.
+    aliases: [friends, friend, f]
+  addfriend:
+    description: Add new friends!
+    aliases: [af, addfriends]
+
+permissions:
+  friendsplus.*:
+    description: Grants access to all FriendsPlus commands.
+
