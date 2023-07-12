@@ -22,4 +22,7 @@ public class Errors {
         return ChatColor.RED + "> " + ChatColor.GRAY + "You don't have any friends!";
     }
 
+    public static String noTargetPending() { return "Error 1: Player had a pending friend request but the target didn't. This shouldn't have happened, but the issue has been fixed."; }
+
+    public static String playerReturnedNull() { return "Error 2: Player returned null."; }
 }

@@ -71,6 +71,37 @@ public abstract class Database {
         return null;
     }
 
+    public String getFriendStatus(String playerUUIDString, String targetUUIDString){
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getSQLConnection();
+            ps = conn.prepareStatement("SELECT * FROM " + table + " WHERE player_uuid = '" + playerUUIDString + "' AND target_uuid = '" + targetUUIDString + "';");
+
+            rs = ps.executeQuery();
+            while(rs.next()){
+                if(rs.getString("player_uuid").equalsIgnoreCase(playerUUIDString.toLowerCase()) &&
+                        rs.getString("target_uuid").equalsIgnoreCase(targetUUIDString.toLowerCase())){
+                    return rs.getString("status");
+                }
+            }
+            return Errors.noFriendsFound();
+        } catch (SQLException ex) {
+            plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
+        } finally {
+            try {
+                if (ps != null)
+                    ps.close();
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException ex) {
+                plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
+            }
+        }
+        return null;
+    }
+
     public void setFriend(String playerUUIDString, String friendUUIDString, String status, String dateFriended){
         Connection conn = null;
         PreparedStatement ps = null;
@@ -85,7 +116,7 @@ public abstract class Database {
                 ps.executeUpdate();
                 return;
             }
-            if(status.equals("accepted") || status.equals("rejected")){
+            if(status.equals("accepted") || status.equals("rejected") || status.equals("blocked")){
                 conn = getSQLConnection();
                 ps = conn.prepareStatement("UPDATE " + table + " SET status=? WHERE player_uuid=? AND friend_uuid=?");
                 ps.setString(1, playerUUIDString);
@@ -95,6 +126,28 @@ public abstract class Database {
                 ps.executeUpdate();
                 return;
             }
+        } catch (SQLException ex) {
+            plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
+        } finally {
+            try {
+                if (ps != null)
+                    ps.close();
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException ex) {
+                plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
+            }
+        }
+        return;
+    }
+
+    public void delFriend(String playerUUIDString, String friendUUIDString){
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = getSQLConnection();
+            ps = conn.prepareStatement("DELETE FROM " + table + " WHERE player_uuid = " + playerUUIDString + " AND target_uuid = " + friendUUIDString);
+            ps.executeUpdate();
         } catch (SQLException ex) {
             plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
         } finally {
