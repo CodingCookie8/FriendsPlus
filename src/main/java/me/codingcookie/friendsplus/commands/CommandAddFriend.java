@@ -34,11 +34,7 @@ public class CommandAddFriend implements CommandExecutor, MsgLevels {
         }
         if(args.length == 1){
             OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(args[0]);
-            if(targetPlayer==null){
-                player.sendMessage(REJECT + "This player doesn't exist.");
-                return true;
-            }
-            utils.setFriendStatus(player.getUniqueId(), targetPlayer.getUniqueId(), "pending");
+            utils.sendFriendRequest(player.getUniqueId(), targetPlayer.getUniqueId());
         }
         return true;
     }

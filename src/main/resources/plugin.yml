@@ -10,7 +10,10 @@ commands:
     aliases: [friends, friend, f]
   addfriend:
     description: Add new friends!
-    aliases: [af, addfriends]
+    aliases: [af, addfriends, afriend]
+  rejectfriend:
+    description: Reject friend requests.
+    aliases: [rf, rejectfriends, rfriend]
 
 permissions:
   friendsplus.*:

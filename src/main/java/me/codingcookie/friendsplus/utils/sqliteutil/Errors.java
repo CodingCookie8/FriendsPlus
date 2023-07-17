@@ -18,7 +18,6 @@ public class Errors {
     }
 
     public static String noFriendsFound(){
-        //TODO: Make this customizable
         return ChatColor.RED + "> " + ChatColor.GRAY + "You don't have any friends!";
     }
 

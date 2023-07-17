@@ -30,7 +30,7 @@ public class CommandFriends implements CommandExecutor, MsgLevels {
         utils = new CommandFriendUtils(plugin);
 
         if(args.length == 0 || (args.length == 1 && args[0].equalsIgnoreCase("list"))){
-            utils.sendFriendList(player);
+            utils.sendFriendList(player, true, true);
         }
 
         if(args.length == 1){
@@ -42,13 +42,9 @@ public class CommandFriends implements CommandExecutor, MsgLevels {
                     args[0].equalsIgnoreCase("deny")){
                 player.sendMessage(PENDING + "Please specify the player you want to reject.");
                 return true;
-            } else{
+            } else {
                 OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(args[0]);
-                if(targetPlayer==null){
-                    player.sendMessage(REJECT + "This player doesn't exist.");
-                    return true;
-                }
-                utils.setFriendStatus(player.getUniqueId(), targetPlayer.getUniqueId(), "pending");
+                utils.sendFriendRequest(player.getUniqueId(), targetPlayer.getUniqueId());
                 return true;
             }
         }
@@ -60,20 +56,13 @@ public class CommandFriends implements CommandExecutor, MsgLevels {
                 return true;
             }
             if(args[0].equalsIgnoreCase("add")){
-                utils.setFriendStatus(player.getUniqueId(), targetPlayer.getUniqueId(), "pending");
+                utils.sendFriendRequest(player.getUniqueId(), targetPlayer.getUniqueId());
                 return true;
             }
             if(args[0].equalsIgnoreCase("reject") ||
                     args[0].equalsIgnoreCase("decline") ||
                     args[0].equalsIgnoreCase("deny")){
-                plugin.getFriendDatabase().delFriend(player.getUniqueId().toString(), targetPlayer.getUniqueId().toString());
-
-                //TODO: Implement blocking
-                player.sendMessage(REJECT + "You rejected the friend request from " + targetPlayer.getName() + ".");
-                if(targetPlayer.isOnline()){
-                    Player targetOnline = Bukkit.getPlayer(args[1]);
-                    targetOnline.sendMessage(REJECT + player.getName() + " rejected your friend request.");
-                }
+                utils.rejectFriendRequest(player.getUniqueId(), targetPlayer.getUniqueId());
                 return true;
             }
         }

@@ -2,6 +2,7 @@ package me.codingcookie.friendsplus.utils.sqliteutil;
 
 
 import me.codingcookie.friendsplus.FriendsPlus;
+import org.bukkit.Bukkit;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -77,12 +78,12 @@ public abstract class Database {
         ResultSet rs = null;
         try {
             conn = getSQLConnection();
-            ps = conn.prepareStatement("SELECT * FROM " + table + " WHERE player_uuid = '" + playerUUIDString + "' AND target_uuid = '" + targetUUIDString + "';");
+            ps = conn.prepareStatement("SELECT * FROM " + table + " WHERE player_uuid = '" + playerUUIDString + "' AND friend_uuid = '" + targetUUIDString + "';");
 
             rs = ps.executeQuery();
             while(rs.next()){
                 if(rs.getString("player_uuid").equalsIgnoreCase(playerUUIDString.toLowerCase()) &&
-                        rs.getString("target_uuid").equalsIgnoreCase(targetUUIDString.toLowerCase())){
+                        rs.getString("friend_uuid").equalsIgnoreCase(targetUUIDString.toLowerCase())){
                     return rs.getString("status");
                 }
             }
@@ -106,7 +107,7 @@ public abstract class Database {
         Connection conn = null;
         PreparedStatement ps = null;
         try {
-            if(status.equals("pending")) {
+            if(status.equals("pending") || (status.equals("receivedrequest"))) {
                 conn = getSQLConnection();
                 ps = conn.prepareStatement("INSERT INTO " + table + " (player_uuid,friend_uuid,status,date_friended) VALUES(?,?,?,?)");
                 ps.setString(1, playerUUIDString);
@@ -118,7 +119,7 @@ public abstract class Database {
             }
             if(status.equals("accepted") || status.equals("rejected") || status.equals("blocked")){
                 conn = getSQLConnection();
-                ps = conn.prepareStatement("UPDATE " + table + " SET status=? WHERE player_uuid=? AND friend_uuid=?");
+                ps = conn.prepareStatement("REPLACE INTO " + table + " (player_uuid,friend_uuid,status,date_friended) VALUES(?,?,?,?)");
                 ps.setString(1, playerUUIDString);
                 ps.setString(2, friendUUIDString);
                 ps.setString(3, status);
@@ -146,7 +147,7 @@ public abstract class Database {
         PreparedStatement ps = null;
         try {
             conn = getSQLConnection();
-            ps = conn.prepareStatement("DELETE FROM " + table + " WHERE player_uuid = " + playerUUIDString + " AND target_uuid = " + friendUUIDString);
+            ps = conn.prepareStatement("DELETE FROM " + table + " WHERE player_uuid = " + playerUUIDString + " AND friend_uuid = " + friendUUIDString);
             ps.executeUpdate();
         } catch (SQLException ex) {
             plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
