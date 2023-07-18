@@ -13,7 +13,9 @@ import java.util.Calendar;
 import java.util.UUID;
 import java.util.logging.Level;
 
-public class CommandFriendUtils implements MsgLevels{
+import static org.bukkit.ChatColor.*;
+
+public class CommandFriendUtils {
 
     private final FriendsPlus plugin;
     public CommandFriendUtils(FriendsPlus plugin){
@@ -36,11 +38,11 @@ public class CommandFriendUtils implements MsgLevels{
 
         if(targetStatus != null){
             if (playerStatus.equals("accepted") && targetStatus.equals("accepted")){
-                player.sendMessage(ACCEPT + "You are already friends with " + targetPlayer.getName() + ".");
+                Messages.ALREADY_FRIENDS.sendMessage(player, targetPlayer.getName());
                 return;
             }
             if(playerStatus.equals("pending")){
-                player.sendMessage(ACCEPT + "You have already sent a friend request to " + targetPlayer.getName() + ".");
+                Messages.ALREADY_SENT_FR.sendMessage(player, targetPlayer.getName());
                 return;
             }
         }
@@ -50,10 +52,10 @@ public class CommandFriendUtils implements MsgLevels{
         } else {
             plugin.getFriendDatabase().setFriend(playerUUID.toString(), targetUUID.toString(), "pending", getTime());
             plugin.getFriendDatabase().setFriend(targetUUID.toString(), playerUUID.toString(), "receivedrequest", getTime());
-            player.sendMessage(PENDING + "You have sent a friend request to " + targetPlayer.getName() + ".");
+            Messages.FR_SENT.sendMessage(player, targetPlayer.getName());
             if(targetPlayer.isOnline()){
                 Player targetOnline = Bukkit.getPlayer(targetUUID);
-                targetOnline.sendMessage(PENDING + player.getName() + " has sent you a friend request.");
+                Messages.FR_RECEIVED.sendMessage(targetOnline, player.getName());
             }
         }
     }
@@ -70,18 +72,19 @@ public class CommandFriendUtils implements MsgLevels{
         Player player = Bukkit.getPlayer(playerUUID);
 
         if(!checkIfPendingRequest(targetUUID, playerUUID)){
-            player.sendMessage(REJECT + "There is no pending friend request between you and " + targetPlayer.getName() + ".");
+            Messages.NO_PENDING_FR.sendMessage(player, targetPlayer.getName());
             return;
         }
         if (playerStatus.equals("accepted") && targetStatus.equals("accepted")){
-            player.sendMessage(PENDING + "You are currently friends with " + targetPlayer.getName() + ". To remove them, please use the command /friend remove <name>.");
+            Messages.ALREADY_FRIENDS.sendMessage(player, targetPlayer.getName());
+            Messages.REMOVE_FRIEND.sendMessage(player);
             return;
         }
 
         plugin.getFriendDatabase().setFriend(playerUUID.toString(), targetUUID.toString(), "rejected", getTime());
         plugin.getFriendDatabase().setFriend(targetUUID.toString(), playerUUID.toString(), "rejected", getTime());
 
-        player.sendMessage(REJECT + "You rejected " + targetPlayer.getName() + "'s friend request.");
+        Messages.FR_REJECT.sendMessage(player, targetPlayer.getName());
     }
 
     private boolean checkIfPendingRequest(UUID playerUUID, UUID targetUUID){
@@ -113,10 +116,10 @@ public class CommandFriendUtils implements MsgLevels{
         plugin.getFriendDatabase().setFriend(playerUUID.toString(), targetUUID.toString(), "accepted", getTime());
         plugin.getFriendDatabase().setFriend(targetUUID.toString(), playerUUID.toString(), "accepted", getTime());
 
-        player.sendMessage(ACCEPT + "You are now friends with " + targetPlayer.getName() + ".");
+        Messages.FR_ACCEPT.sendMessage(player, targetPlayer.getName());
         if(targetPlayer.isOnline()){
             Player targetOnline = Bukkit.getPlayer(targetUUID);
-            targetOnline.sendMessage(ACCEPT + "You are now friends with " + player.getName() + ".");
+            Messages.FR_ACCEPT.sendMessage(targetOnline, player.getName());
         }
     }
 
@@ -131,11 +134,12 @@ public class CommandFriendUtils implements MsgLevels{
             if(friendListPendingStringUUID.contains(Errors.noFriendsFound())){
                 friendListPendingStringUUID.clear();
             }else {
-                player.sendMessage(PENDING + "Pending friend requests:");
+                Messages.PENDING_FRIENDS_HEADER.sendMessage(player);
                 for (String friendPendingList : friendListPendingStringUUID) {
                     OfflinePlayer offlinePendingPlayer = Bukkit.getOfflinePlayer(UUID.fromString(friendPendingList));
-                    player.sendMessage(PENDING + offlinePendingPlayer.getName());
+                    player.sendMessage(GRAY + offlinePendingPlayer.getName());
                 }
+                player.sendMessage("");
             }
         }
 
@@ -145,13 +149,13 @@ public class CommandFriendUtils implements MsgLevels{
                 friendListStringUUID.clear();
                 return;
             }
-            player.sendMessage(ACCEPT + "Current friends:");
+            Messages.CURRENT_FRIENDS_HEADER.sendMessage(player);
             for (String friendList : friendListStringUUID) {
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(friendList));
                 if (offlinePlayer.isOnline()) {
-                    player.sendMessage(ACCEPT + "" + ChatColor.GREEN + offlinePlayer.getName());
+                    player.sendMessage(GREEN + offlinePlayer.getName());
                 } else {
-                    player.sendMessage(ACCEPT + offlinePlayer.getName());
+                    player.sendMessage(RED + offlinePlayer.getName());
                 }
             }
         }
@@ -167,16 +171,20 @@ public class CommandFriendUtils implements MsgLevels{
             return false;
         }
         if(targetPlayer == null){
-            player.sendMessage(REJECT + "This player doesn't exist.");
+            Messages.NO_PLAYER.sendMessage(player);
             return false;
         }
 
         if(targetPlayer.isBanned()){
-            player.sendMessage(REJECT + "Unfortunately, the player you are trying to friend is banned.");
+            Messages.CANNOT_FRIEND.sendMessage(player);
+            return false;
+        }
+        if(player == targetPlayer){
+            Messages.CANNOT_FRIEND.sendMessage(player);
             return false;
         }
         if(!targetPlayer.hasPlayedBefore()){
-            player.sendMessage(REJECT + "You can't friend players that haven't joined this server before.");
+            Messages.NEVER_JOINED.sendMessage(player);
             return false;
         }
         return true;

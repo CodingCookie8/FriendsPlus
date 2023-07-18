@@ -16,6 +16,12 @@ commands:
     aliases: [rf, rejectfriends, rfriend]
 
 permissions:
-  friendsplus.*:
+  friend.*:
     description: Grants access to all FriendsPlus commands.
+  friend.list:
+    description: Lists all friends.
+  friend.add:
+    description: Adds a friend.
+  friend.reject:
+    description: Rejects a friend request.
 

@@ -2,7 +2,7 @@ package me.codingcookie.friendsplus.events;
 
 import me.codingcookie.friendsplus.FriendsPlus;
 import me.codingcookie.friendsplus.utils.CommandFriendUtils;
-import me.codingcookie.friendsplus.utils.MsgLevels;
+import me.codingcookie.friendsplus.utils.Messages;
 import me.codingcookie.friendsplus.utils.sqliteutil.Errors;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -13,7 +13,7 @@ import org.bukkit.event.Listener;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class PlayerJoinEvent implements Listener, MsgLevels {
+public class PlayerJoinEvent implements Listener {
 
     private final FriendsPlus plugin;
     public PlayerJoinEvent(FriendsPlus plugin){
@@ -45,9 +45,9 @@ public class PlayerJoinEvent implements Listener, MsgLevels {
             if(offlinePlayer.isOnline()){
                 Player friend = Bukkit.getPlayer(offlinePlayer.getUniqueId());
                 if(joined) {
-                    friend.sendMessage(ACCEPT + "Your friend, " + player.getName() + ", joined the game!");
+                    Messages.FRIEND_JOINED.sendMessage(friend, player.getName());
                 } else {
-                    friend.sendMessage(REJECT + "Your friend, " + player.getName() + ", quit the game!");
+                    Messages.FRIEND_QUIT.sendMessage(friend, player.getName());
                 }
             } else {
                 continue;

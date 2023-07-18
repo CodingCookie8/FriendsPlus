@@ -1,8 +1,13 @@
 package me.codingcookie.friendsplus.commands;
 
+import co.aikar.commands.BaseCommand;
+import co.aikar.commands.annotation.CommandAlias;
+import co.aikar.commands.annotation.CommandPermission;
+import co.aikar.commands.annotation.Default;
+import co.aikar.commands.annotation.Subcommand;
 import me.codingcookie.friendsplus.FriendsPlus;
 import me.codingcookie.friendsplus.utils.CommandFriendUtils;
-import me.codingcookie.friendsplus.utils.MsgLevels;
+import me.codingcookie.friendsplus.utils.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -10,7 +15,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class CommandFriends implements CommandExecutor, MsgLevels {
+@CommandAlias("friends|friend|f")
+public class CommandFriends extends BaseCommand {
 
     private final FriendsPlus plugin;
     CommandFriendUtils utils;
@@ -19,56 +25,59 @@ public class CommandFriends implements CommandExecutor, MsgLevels {
         this.plugin = plugin;
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if(!(sender instanceof Player)){
-            Bukkit.getConsoleSender().sendMessage("This command can only be run in game!");
-            return true;
-        }
-
-        Player player = (Player) sender;
+    @Default
+    @CommandPermission("friend.list")
+    public void onDefault(Player player){
         utils = new CommandFriendUtils(plugin);
+        utils.sendFriendList(player, true, true);
+    }
 
-        if(args.length == 0 || (args.length == 1 && args[0].equalsIgnoreCase("list"))){
-            utils.sendFriendList(player, true, true);
+    @Subcommand("add")
+    @CommandAlias("fadd|addfriend|friendadd")
+    @CommandPermission("friend.add")
+    public void onAdd(Player player, Player target, String[] args){
+        utils = new CommandFriendUtils(plugin);
+        if(args.length == 0){
+            Messages.SPECIFY_PLAYER.sendMessage(player, "friend");
+            return;
         }
-
+        if(args.length == 1 && args[0].equalsIgnoreCase("add")){
+            Messages.SPECIFY_PLAYER.sendMessage(player, "friend");
+            return;
+        }
         if(args.length == 1){
-            if(args[0].equalsIgnoreCase("add")){
-                player.sendMessage(PENDING + "Please specify the player you want to friend.");
-                return true;
-            }if(args[0].equalsIgnoreCase("reject") ||
-                    args[0].equalsIgnoreCase("decline") ||
-                    args[0].equalsIgnoreCase("deny")){
-                player.sendMessage(PENDING + "Please specify the player you want to reject.");
-                return true;
-            } else {
-                OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(args[0]);
-                utils.sendFriendRequest(player.getUniqueId(), targetPlayer.getUniqueId());
-                return true;
-            }
+            OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(args[0]);
+            utils.sendFriendRequest(player.getUniqueId(), targetPlayer.getUniqueId());
+            return;
         }
-
         if(args.length == 2){
             OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(args[1]);
-            if(targetPlayer==null){
-                player.sendMessage(REJECT + "This player doesn't exist.");
-                return true;
-            }
-            if(args[0].equalsIgnoreCase("add")){
-                utils.sendFriendRequest(player.getUniqueId(), targetPlayer.getUniqueId());
-                return true;
-            }
-            if(args[0].equalsIgnoreCase("reject") ||
-                    args[0].equalsIgnoreCase("decline") ||
-                    args[0].equalsIgnoreCase("deny")){
-                utils.rejectFriendRequest(player.getUniqueId(), targetPlayer.getUniqueId());
-                return true;
-            }
+            utils.sendFriendRequest(player.getUniqueId(), targetPlayer.getUniqueId());
         }
+    }
 
-
-        return true;
+    @Subcommand("reject")
+    @CommandAlias("freject|rejectfriend|friendreject")
+    @CommandPermission("friend.reject")
+    public void onReject(Player player, Player target, String[] args){
+        utils = new CommandFriendUtils(plugin);
+        if(args.length == 0){
+            Messages.SPECIFY_PLAYER.sendMessage(player, "reject");
+            return;
+        }
+        if(args.length == 1 && args[0].equalsIgnoreCase("reject")){
+            Messages.SPECIFY_PLAYER.sendMessage(player, "reject");
+            return;
+        }
+        if(args.length == 1){
+            OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(args[0]);
+            utils.rejectFriendRequest(player.getUniqueId(), targetPlayer.getUniqueId());
+            return;
+        }
+        if(args.length == 2){
+            OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(args[1]);
+            utils.rejectFriendRequest(player.getUniqueId(), targetPlayer.getUniqueId());
+        }
     }
 
 }
