@@ -1,7 +1,7 @@
 package me.codingcookie.friendsplus.events;
 
 import me.codingcookie.friendsplus.FriendsPlus;
-import me.codingcookie.friendsplus.utils.CommandFriendUtils;
+import me.codingcookie.friendsplus.utils.FriendUtil;
 import me.codingcookie.friendsplus.utils.Messages;
 import me.codingcookie.friendsplus.utils.sqliteutil.Errors;
 import org.bukkit.Bukkit;
@@ -20,12 +20,12 @@ public class PlayerJoinEvent implements Listener {
         this.plugin = plugin;
     }
 
-    CommandFriendUtils utils;
+    FriendUtil utils;
 
     @EventHandler
     public void onPlayerJoin(org.bukkit.event.player.PlayerJoinEvent event){
         Player player = event.getPlayer();
-        utils = new CommandFriendUtils(plugin);
+        utils = new FriendUtil(plugin);
 
         utils.sendFriendList(player, true, false);
 
@@ -33,15 +33,17 @@ public class PlayerJoinEvent implements Listener {
     }
 
     public void notifyFriends(Player player, boolean joined){
-        ArrayList<String> friendListStringUUID = new ArrayList<>();
-        friendListStringUUID.add(plugin.getFriendDatabase().getFriendListUUID(player.getUniqueId().toString(), "accepted"));
+        ArrayList<UUID> friendListUUID = new ArrayList<>();
+        friendListUUID.add(plugin.getFriendDatabase().getFriendListUUID(player.getUniqueId(), "accepted"));
 
-        if(plugin.getFriendDatabase().getFriendListUUID(player.getUniqueId().toString(), "accepted").contains(Errors.noFriendsFound())){
+        UUID uuidBlank = new UUID( 0 , 0 );
+
+        if(friendListUUID.contains(uuidBlank)){
             return;
         }
 
-        for (String friendList : friendListStringUUID) {
-            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(friendList));
+        for (UUID friendList : friendListUUID) {
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(friendList);
             if(offlinePlayer.isOnline()){
                 Player friend = Bukkit.getPlayer(offlinePlayer.getUniqueId());
                 if(joined) {
@@ -54,7 +56,7 @@ public class PlayerJoinEvent implements Listener {
             }
         }
 
-        friendListStringUUID.clear();
+        friendListUUID.clear();
     }
 
 }

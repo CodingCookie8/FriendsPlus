@@ -1,7 +1,6 @@
 package me.codingcookie.friendsplus.utils.sqliteutil;
 
 import me.codingcookie.friendsplus.FriendsPlus;
-import me.codingcookie.friendsplus.utils.sqliteutil.Database;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,19 +10,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
 
-public class SQLite extends Database{
+public class SQLite extends Database {
 
     String dbname;
 
     public SQLite(FriendsPlus instance){
         super(instance);
         dbname = plugin.getConfig().getString("SQLite.Filename", "friend_list");
-
     }
 
     public String SQLiteCreateFriendsTable = "CREATE TABLE IF NOT EXISTS friend_list (" + // make sure to put your table name in here too.
-            "`player_uuid` varchar(32) NOT NULL," +
-            "`friend_uuid` varchar(32) NOT NULL," +
+            "`player_uuid` binary(16) NOT NULL," +
+            "`friend_uuid` binary(16) NOT NULL," +
             "`status` varchar(32) NOT NULL," +
             "`date_friended` varchar(32) NOT NULL," +
             "PRIMARY KEY (`player_uuid`)" +  // This is creating 3 colums Player, Kills, Total. Primary key is what you are going to use as your indexer. Here we want to use player so

@@ -3,7 +3,6 @@ package me.codingcookie.friendsplus.utils;
 import me.codingcookie.friendsplus.FriendsPlus;
 import me.codingcookie.friendsplus.utils.sqliteutil.Errors;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
@@ -15,33 +14,33 @@ import java.util.logging.Level;
 
 import static org.bukkit.ChatColor.*;
 
-public class CommandFriendUtils {
+public class FriendUtil {
 
     private final FriendsPlus plugin;
-    public CommandFriendUtils(FriendsPlus plugin){
+    public FriendUtil(FriendsPlus plugin){
         this.plugin = plugin;
     }
 
     private String playerStatus;
     private String targetStatus;
 
-    public void sendFriendRequest(UUID playerUUID, UUID targetUUID){
-        if(!checks(playerUUID, targetUUID)){
+    public void sendFriendRequest(UUID playerUUID, UUID targetUUID) {
+        if (!checks(playerUUID, targetUUID)) {
             return;
         }
 
         Player player = Bukkit.getPlayer(playerUUID);
         OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(targetUUID);
 
-        playerStatus = plugin.getFriendDatabase().getFriendStatus(playerUUID.toString(), targetUUID.toString());
-        targetStatus = plugin.getFriendDatabase().getFriendStatus(targetUUID.toString(), playerUUID.toString());
+        playerStatus = plugin.getFriendDatabase().getFriendStatus(playerUUID, targetUUID);
+        targetStatus = plugin.getFriendDatabase().getFriendStatus(targetUUID, playerUUID);
 
-        if(targetStatus != null){
-            if (playerStatus.equals("accepted") && targetStatus.equals("accepted")){
+        if (targetStatus != null) {
+            if (playerStatus.equals("accepted") && targetStatus.equals("accepted")) {
                 Messages.ALREADY_FRIENDS.sendMessage(player, targetPlayer.getName());
                 return;
             }
-            if(playerStatus.equals("pending")){
+            if (playerStatus.equals("pending")) {
                 Messages.ALREADY_SENT_FR.sendMessage(player, targetPlayer.getName());
                 return;
             }
@@ -50,13 +49,31 @@ public class CommandFriendUtils {
         if(checkIfPendingRequest(targetUUID, playerUUID)){
             acceptFriend(playerUUID, targetUUID);
         } else {
-            plugin.getFriendDatabase().setFriend(playerUUID.toString(), targetUUID.toString(), "pending", getTime());
-            plugin.getFriendDatabase().setFriend(targetUUID.toString(), playerUUID.toString(), "receivedrequest", getTime());
+            plugin.getFriendDatabase().setFriend(playerUUID, targetUUID, "pending", getTime());
+            plugin.getFriendDatabase().setFriend(targetUUID, playerUUID, "receivedrequest", getTime());
             Messages.FR_SENT.sendMessage(player, targetPlayer.getName());
-            if(targetPlayer.isOnline()){
+            if (targetPlayer.isOnline()) {
                 Player targetOnline = Bukkit.getPlayer(targetUUID);
-                Messages.FR_RECEIVED.sendMessage(targetOnline, player.getName());
+                LinkUtil linkUtil = new LinkUtil();
+                linkUtil.acceptRejectBlock(targetOnline, GRAY + "> " + YELLOW + player.getName() + " sent you a friend request.", player.getName());
             }
+        }
+    }
+
+     void acceptFriend(UUID playerUUID, UUID targetUUID){
+        playerStatus = plugin.getFriendDatabase().getFriendStatus(playerUUID, targetUUID);
+        targetStatus = plugin.getFriendDatabase().getFriendStatus(targetUUID, playerUUID);
+
+        OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(targetUUID);
+        Player player = Bukkit.getPlayer(playerUUID);
+
+        plugin.getFriendDatabase().setFriend(playerUUID, targetUUID, "accepted", getTime());
+        plugin.getFriendDatabase().setFriend(targetUUID, playerUUID, "accepted", getTime());
+
+        Messages.FR_ACCEPT.sendMessage(player, targetPlayer.getName());
+        if(targetPlayer.isOnline()){
+            Player targetOnline = Bukkit.getPlayer(targetUUID);
+            Messages.FR_ACCEPT.sendMessage(targetOnline, player.getName());
         }
     }
 
@@ -65,8 +82,8 @@ public class CommandFriendUtils {
             return;
         }
 
-        playerStatus = plugin.getFriendDatabase().getFriendStatus(playerUUID.toString(), targetUUID.toString());
-        targetStatus = plugin.getFriendDatabase().getFriendStatus(targetUUID.toString(), playerUUID.toString());
+        playerStatus = plugin.getFriendDatabase().getFriendStatus(playerUUID, targetUUID);
+        targetStatus = plugin.getFriendDatabase().getFriendStatus(targetUUID, playerUUID);
 
         OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(targetUUID);
         Player player = Bukkit.getPlayer(playerUUID);
@@ -81,15 +98,14 @@ public class CommandFriendUtils {
             return;
         }
 
-        plugin.getFriendDatabase().setFriend(playerUUID.toString(), targetUUID.toString(), "rejected", getTime());
-        plugin.getFriendDatabase().setFriend(targetUUID.toString(), playerUUID.toString(), "rejected", getTime());
-
+        plugin.getFriendDatabase().delFriend(playerUUID, targetUUID);
+        plugin.getFriendDatabase().delFriend(targetUUID, playerUUID);
         Messages.FR_REJECT.sendMessage(player, targetPlayer.getName());
     }
 
     private boolean checkIfPendingRequest(UUID playerUUID, UUID targetUUID){
-        playerStatus = plugin.getFriendDatabase().getFriendStatus(playerUUID.toString(), targetUUID.toString());
-        targetStatus = plugin.getFriendDatabase().getFriendStatus(targetUUID.toString(), playerUUID.toString());
+        playerStatus = plugin.getFriendDatabase().getFriendStatus(playerUUID, targetUUID);
+        targetStatus = plugin.getFriendDatabase().getFriendStatus(targetUUID, playerUUID);
 
         if(playerStatus == null){
             return false;
@@ -106,37 +122,44 @@ public class CommandFriendUtils {
         }
     }
 
-    private void acceptFriend(UUID playerUUID, UUID targetUUID){
-        playerStatus = plugin.getFriendDatabase().getFriendStatus(playerUUID.toString(), targetUUID.toString());
-        targetStatus = plugin.getFriendDatabase().getFriendStatus(targetUUID.toString(), playerUUID.toString());
+    public void removeFriend(UUID playerUUID, UUID targetUUID){
+        playerStatus = plugin.getFriendDatabase().getFriendStatus(playerUUID, targetUUID);
+        targetStatus = plugin.getFriendDatabase().getFriendStatus(targetUUID, playerUUID);
+
+        if(!checks(playerUUID, targetUUID)){
+            return;
+        }
 
         OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(targetUUID);
         Player player = Bukkit.getPlayer(playerUUID);
 
-        plugin.getFriendDatabase().setFriend(playerUUID.toString(), targetUUID.toString(), "accepted", getTime());
-        plugin.getFriendDatabase().setFriend(targetUUID.toString(), playerUUID.toString(), "accepted", getTime());
-
-        Messages.FR_ACCEPT.sendMessage(player, targetPlayer.getName());
-        if(targetPlayer.isOnline()){
-            Player targetOnline = Bukkit.getPlayer(targetUUID);
-            Messages.FR_ACCEPT.sendMessage(targetOnline, player.getName());
+        if(playerStatus == null || targetStatus == null){
+            Messages.NOT_FRIENDS.sendMessage(player, targetPlayer.getName());
+            return;
         }
+
+        plugin.getFriendDatabase().delFriend(playerUUID, targetUUID);
+        plugin.getFriendDatabase().delFriend(targetUUID, playerUUID);
+        Messages.REMOVE_FRIEND.sendMessage(player, targetPlayer.getName());
+
     }
 
     public void sendFriendList(Player player, boolean includePending, boolean includeCurrent){
-        ArrayList<String> friendListStringUUID = new ArrayList<>();
-        friendListStringUUID.add(plugin.getFriendDatabase().getFriendListUUID(player.getUniqueId().toString(), "accepted"));
+        ArrayList<UUID> friendListUUID = new ArrayList<>();
+        friendListUUID.add(plugin.getFriendDatabase().getFriendListUUID(player.getUniqueId(), "accepted"));
 
-        ArrayList<String> friendListPendingStringUUID = new ArrayList<>();
-        friendListPendingStringUUID.add(plugin.getFriendDatabase().getFriendListUUID(player.getUniqueId().toString(), "receivedrequest"));
+        ArrayList<UUID> friendListPendingUUID = new ArrayList<>();
+        friendListPendingUUID.add(plugin.getFriendDatabase().getFriendListUUID(player.getUniqueId(), "receivedrequest"));
+
+        UUID uuidBlank = new UUID( 0 , 0 );
 
         if(includePending) {
-            if(friendListPendingStringUUID.contains(Errors.noFriendsFound())){
-                friendListPendingStringUUID.clear();
+            if(friendListPendingUUID.contains(uuidBlank)){
+                friendListPendingUUID.clear();
             }else {
                 Messages.PENDING_FRIENDS_HEADER.sendMessage(player);
-                for (String friendPendingList : friendListPendingStringUUID) {
-                    OfflinePlayer offlinePendingPlayer = Bukkit.getOfflinePlayer(UUID.fromString(friendPendingList));
+                for (UUID friendPendingList : friendListPendingUUID) {
+                    OfflinePlayer offlinePendingPlayer = Bukkit.getOfflinePlayer(friendPendingList);
                     player.sendMessage(GRAY + offlinePendingPlayer.getName());
                 }
                 player.sendMessage("");
@@ -144,23 +167,25 @@ public class CommandFriendUtils {
         }
 
         if(includeCurrent) {
-            if(friendListStringUUID.contains(Errors.noFriendsFound())){
+            if(friendListUUID.contains(uuidBlank)){
                 player.sendMessage(Errors.noFriendsFound());
-                friendListStringUUID.clear();
+                friendListUUID.clear();
                 return;
             }
+            player.sendMessage(" ");
             Messages.CURRENT_FRIENDS_HEADER.sendMessage(player);
-            for (String friendList : friendListStringUUID) {
-                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(friendList));
+            for (UUID friendList : friendListUUID) {
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(friendList);
                 if (offlinePlayer.isOnline()) {
-                    player.sendMessage(GREEN + offlinePlayer.getName());
+                    player.sendMessage(GRAY + "> " + GREEN + offlinePlayer.getName());
                 } else {
-                    player.sendMessage(RED + offlinePlayer.getName());
+                    player.sendMessage(GRAY + "> " + offlinePlayer.getName());
                 }
             }
         }
 
-        friendListStringUUID.clear();
+        friendListUUID.clear();
+        friendListPendingUUID.clear();
     }
 
     public boolean checks(UUID playerUUID, UUID targetUUID){
